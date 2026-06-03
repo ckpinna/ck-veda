@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Personal Relationship Manager{% endblock %}</title>
+    <style>
+      :root {
+        --bg: #f6f7f4;
+        --surface: #ffffff;
+        --soft: #eef3f6;
+        --text: #1d2522;
+        --muted: #64716d;
+        --line: #d8dfdc;
+        --accent: #1b6f6a;
+        --accent-strong: #124e4b;
+        --danger: #a33b36;
+        --success: #246b43;
+      }
+      * { box-sizing: border-box; }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.45;
+        margin: 0;
+      }
+      a { color: inherit; text-decoration: none; }
+      .shell { margin: 0 auto; max-width: 1120px; padding: 0 20px 48px; }
+      header {
+        align-items: center;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+        min-height: 64px;
+      }
+      .brand { font-size: 18px; font-weight: 760; }
+      nav { display: flex; gap: 18px; }
+      nav a { color: var(--muted); font-weight: 650; }
+      nav a:hover { color: var(--text); }
+      main { padding-top: 28px; }
+      h1, h2, h3, p { margin-top: 0; }
+      h1 { font-size: 34px; line-height: 1.1; margin-bottom: 0; }
+      h2 { font-size: 18px; margin-bottom: 0; }
+      h3 { font-size: 16px; margin-bottom: 4px; }
+      .eyebrow {
+        color: var(--accent-strong);
+        font-size: 12px;
+        font-weight: 760;
+        letter-spacing: 0;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+      }
+      .page-stack { display: grid; gap: 20px; }
+      .page-heading {
+        align-items: flex-start;
+        display: flex;
+        gap: 16px;
+        justify-content: space-between;
+      }
+      .actions, .search-row { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; }
+      .button, button {
+        align-items: center;
+        background: var(--accent);
+        border: 1px solid transparent;
+        border-radius: 6px;
+        color: white;
+        cursor: pointer;
+        display: inline-flex;
+        font: inherit;
+        font-weight: 700;
+        min-height: 40px;
+        padding: 0 14px;
+      }
+      .button:hover, button:hover { background: var(--accent-strong); }
+      .secondary-button {
+        align-items: center;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        display: inline-flex;
+        font-weight: 700;
+        min-height: 40px;
+        padding: 0 14px;
+      }
+      .secondary-button:hover { border-color: var(--accent); color: var(--accent-strong); }
+      .section {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 18px;
+      }
+      .section-header {
+        align-items: center;
+        display: flex;
+        gap: 10px;
+        justify-content: space-between;
+        margin-bottom: 14px;
+      }
+      .count, .pill {
+        background: var(--soft);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 760;
+        line-height: 1;
+        padding: 5px 8px;
+      }
+      .grid-2 { display: grid; gap: 20px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .stack { display: grid; gap: 10px; }
+      .person-row, .fact-card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 13px 14px;
+      }
+      .person-row {
+        align-items: center;
+        display: flex;
+        gap: 16px;
+        justify-content: space-between;
+        min-height: 62px;
+      }
+      .person-row:hover { border-color: var(--accent); }
+      .person-row small { color: var(--muted); display: block; margin-top: 2px; }
+      .muted { color: var(--muted); }
+      .empty {
+        background: var(--soft);
+        border: 1px dashed var(--line);
+        border-radius: 8px;
+        color: var(--muted);
+        padding: 16px;
+      }
+      .notice, .error, .success {
+        border-radius: 8px;
+        padding: 12px 14px;
+        white-space: pre-wrap;
+      }
+      .notice { background: #fff8e8; border: 1px solid #ead09a; }
+      .error { background: #fff1ef; border: 1px solid #e4b3af; color: var(--danger); }
+      .success { background: #eff9f2; border: 1px solid #b8ddc3; color: var(--success); }
+      label { color: var(--muted); display: grid; font-size: 13px; font-weight: 720; gap: 6px; }
+      input, select, textarea {
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        color: var(--text);
+        font: inherit;
+        min-height: 40px;
+        padding: 8px 10px;
+        width: 100%;
+      }
+      textarea { min-height: 220px; resize: vertical; }
+      .note-input { min-height: 280px; }
+      .json-input { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; min-height: 520px; }
+      .match-list { display: grid; gap: 12px; margin-bottom: 14px; }
+      .match-card {
+        background: var(--soft);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px;
+      }
+      .profile-facts { color: var(--muted); display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
+      @media (max-width: 780px) {
+        .shell { padding-inline: 14px; }
+        header, .page-heading, .person-row { align-items: stretch; flex-direction: column; }
+        header { justify-content: center; padding: 12px 0; }
+        nav { flex-wrap: wrap; }
+        .grid-2 { grid-template-columns: 1fr; }
+        h1 { font-size: 28px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header>
+        <a class="brand" href="/">Veda</a>
+        <nav>
+          <a href="/people">People</a>
+          <a href="/search">Search</a>
+          <a href="/ingest">Manual Ingestion</a>
+        </nav>
+      </header>
+      <main>
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </body>
+</html>

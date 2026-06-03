@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Relationship Memory{% endblock %}
+{% block content %}
+<div class="page-stack">
+  <section class="page-heading">
+    <div>
+      <p class="eyebrow">Personal Relationship Manager</p>
+      <h1>Relationship Memory</h1>
+    </div>
+    <div class="actions">
+      <a class="button" href="/ingest">Add Note</a>
+      <a class="secondary-button" href="/people">Browse People</a>
+    </div>
+  </section>
+
+  {% if error %}
+    <div class="error">{{ error }}</div>
+  {% endif %}
+
+  <section class="section">
+    <div class="section-header">
+      <h2>Recent People</h2>
+      <span class="count">{{ people|length }}</span>
+    </div>
+    {% if people %}
+      <div class="stack">
+        {% for person in people %}
+          <a class="person-row" href="/people/{{ person.id }}">
+            <span>
+              <strong>{{ person.display_name }}</strong>
+              {% if person.current_context %}<small>{{ person.current_context }}</small>{% endif %}
+            </span>
+            <span class="muted">{{ person.location or "No location" }}</span>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty">No people yet.</div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}{% if detail %}{{ detail.person.display_name }}{% else %}Person{% endif %}{% endblock %}
+{% block content %}
+<div class="page-stack">
+  <a class="secondary-button" href="/people" style="width: fit-content;">Back to People</a>
+
+  {% if error %}
+    <div class="error">{{ error }}</div>
+  {% elif detail %}
+    <section class="page-heading">
+      <div>
+        <p class="eyebrow">Person</p>
+        <h1>{{ detail.person.display_name }}</h1>
+        {% if detail.person.current_context %}<p class="muted">{{ detail.person.current_context }}</p>{% endif %}
+      </div>
+      <div class="profile-facts">
+        <span>{{ detail.person.location or "No location" }}</span>
+        <span>Last interaction: {{ detail.person.last_interaction_at or "Not recorded" }}</span>
+      </div>
+    </section>
+
+    {% if detail.person.notes %}
+      <section class="section">
+        <div class="section-header"><h2>Notes</h2></div>
+        <p>{{ detail.person.notes }}</p>
+      </section>
+    {% endif %}
+
+    <div class="grid-2">
+      {% set sections = [
+        ("Contact Methods", detail.contact_methods, "contact_value", "contact_type"),
+        ("Knows About", detail.knows_about, "topic", "context"),
+        ("Looking For", detail.looking_for, "ask", "context"),
+        ("Can Help With", detail.can_help_with, "help_area", "context")
+      ] %}
+      {% for title, items, main_key, sub_key in sections %}
+        <section class="section">
+          <div class="section-header">
+            <h2>{{ title }}</h2>
+            <span class="count">{{ items|length }}</span>
+          </div>
+          {% if items %}
+            <div class="stack">
+              {% for item in items %}
+                <div class="fact-card">
+                  <strong>{{ item[main_key] }}</strong>
+                  {% if item[sub_key] %}<p>{{ item[sub_key] }}</p>{% endif %}
+                  {% if item.status or item.confidence %}
+                    <p class="muted">{{ item.status or "" }}{% if item.status and item.confidence %} · {% endif %}{{ item.confidence or "" }}</p>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="empty">None recorded.</div>
+          {% endif %}
+        </section>
+      {% endfor %}
+    </div>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>Interactions</h2>
+        <span class="count">{{ detail.interactions|length }}</span>
+      </div>
+      {% if detail.interactions %}
+        <div class="stack">
+          {% for item in detail.interactions %}
+            <div class="fact-card">
+              <p><strong>{{ item.interaction_date }}</strong> <span class="pill">{{ item.interaction_quality }}</span></p>
+              <p>{{ item.summary }}</p>
+              <p class="muted">{{ item.channel }}</p>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty">No interactions recorded.</div>
+      {% endif %}
+    </section>
+
+    <div class="grid-2">
+      <section class="section">
+        <div class="section-header"><h2>Introductions</h2><span class="count">{{ detail.introductions|length }}</span></div>
+        {% if detail.introductions %}
+          <div class="stack">
+            {% for item in detail.introductions %}
+              <div class="fact-card">
+                <strong>
+                  {{ detail.people_by_id.get(item.from_person_id, {}).get("display_name", "Unknown person") }}
+                  to
+                  {{ detail.people_by_id.get(item.to_person_id, {}).get("display_name", "Unknown person") }}
+                </strong>
+                {% if item.reason %}<p>{{ item.reason }}</p>{% endif %}
+                <p class="muted">{{ item.intro_date }} · {{ item.status }}</p>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty">No introductions recorded.</div>
+        {% endif %}
+      </section>
+
+      <section class="section">
+        <div class="section-header"><h2>Relationship Sources</h2><span class="count">{{ detail.relationship_sources|length }}</span></div>
+        {% if detail.relationship_sources %}
+          <div class="stack">
+            {% for item in detail.relationship_sources %}
+              <div class="fact-card">
+                <strong>{{ item.source_value or item.source_type }}</strong>
+                {% if item.context %}<p>{{ item.context }}</p>{% endif %}
+                <p class="muted">{{ item.source_date }} · {{ item.confidence }}</p>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty">No relationship sources recorded.</div>
+        {% endif %}
+      </section>
+
+      <section class="section">
+        <div class="section-header"><h2>Referrals</h2><span class="count">{{ detail.referrals|length }}</span></div>
+        {% if detail.referrals %}
+          <div class="stack">
+            {% for item in detail.referrals %}
+              <div class="fact-card">
+                <strong>{{ detail.people_by_id.get(item.referrer_person_id, {}).get("display_name", "Unknown person") }}</strong>
+                {% if item.context %}<p>{{ item.context }}</p>{% endif %}
+                <p class="muted">{{ item.referred_at }} · {{ item.confidence }}</p>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty">No referrals recorded.</div>
+        {% endif %}
+      </section>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

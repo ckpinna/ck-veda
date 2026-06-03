@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Search{% endblock %}
+{% block content %}
+<div class="page-stack">
+  <section class="page-heading">
+    <div>
+      <p class="eyebrow">Search</p>
+      <h1>Find People</h1>
+    </div>
+  </section>
+
+  <section class="section">
+    <form class="search-row" method="get" action="/search">
+      <input type="search" name="q" value="{{ q }}" placeholder="Search people, location, topics, asks, help, interactions">
+      <button type="submit">Search</button>
+      {% if q %}<a class="secondary-button" href="/search">Clear</a>{% endif %}
+    </form>
+  </section>
+
+  {% if error %}
+    <div class="error">{{ error }}</div>
+  {% endif %}
+
+  <section class="section">
+    <div class="section-header">
+      <h2>Results</h2>
+      <span class="count">{{ people|length }}</span>
+    </div>
+    {% if people %}
+      <div class="stack">
+        {% for person in people %}
+          <a class="person-row" href="/people/{{ person.id }}">
+            <span>
+              <strong>{{ person.display_name }}</strong>
+              {% if person.current_context %}<small>{{ person.current_context }}</small>{% endif %}
+            </span>
+            <span class="muted">{{ person.location or "" }}</span>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty">No results.</div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

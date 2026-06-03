@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Review Extraction{% endblock %}
+{% block content %}
+<div class="page-stack">
+  <section class="page-heading">
+    <div>
+      <p class="eyebrow">Review</p>
+      <h1>Review Extraction</h1>
+    </div>
+    <a class="secondary-button" href="/ingest">Back</a>
+  </section>
+
+  {% if error %}
+    <div class="error">{{ error }}</div>
+  {% endif %}
+
+  {% if warnings %}
+    <div class="notice">
+      {% for warning in warnings %}{{ warning }}
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <section class="section">
+    <form method="post" action="/api/save-extraction" class="stack">
+      {% if extraction and extraction.people %}
+        <div class="match-list">
+          {% for person in extraction.people %}
+            <div class="match-card">
+              <h3>{{ person.display_name }}</h3>
+              <label>
+                Possible Match
+                <select name="selected_existing_person_id__{{ person.temp_id }}">
+                  <option value="">Create new person</option>
+                  {% for match in person.possible_matches %}
+                    <option value="{{ match.id }}">
+                      {{ match.display_name }}{% if match.location %}, {{ match.location }}{% endif %}
+                    </option>
+                  {% endfor %}
+                </select>
+              </label>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <label>
+        Structured JSON
+        <textarea class="json-input" name="extraction_json" required>{{ extraction_json }}</textarea>
+      </label>
+
+      <div class="actions">
+        <button type="submit">Save</button>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}

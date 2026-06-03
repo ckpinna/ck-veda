@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}People{% endblock %}
+{% block content %}
+<div class="page-stack">
+  <section class="page-heading">
+    <div>
+      <p class="eyebrow">People</p>
+      <h1>People List</h1>
+    </div>
+    <a class="button" href="/ingest">Add Note</a>
+  </section>
+
+  {% if error %}
+    <div class="error">{{ error }}</div>
+  {% endif %}
+
+  <section class="section">
+    <div class="section-header">
+      <h2>All People</h2>
+      <span class="count">{{ people|length }}</span>
+    </div>
+    {% if people %}
+      <div class="stack">
+        {% for person in people %}
+          <a class="person-row" href="/people/{{ person.id }}">
+            <span>
+              <strong>{{ person.display_name }}</strong>
+              {% if person.current_context %}<small>{{ person.current_context }}</small>{% endif %}
+            </span>
+            <span class="profile-facts">
+              {% if person.location %}<span>{{ person.location }}</span>{% endif %}
+              {% if person.last_interaction_at %}<span>{{ person.last_interaction_at }}</span>{% endif %}
+            </span>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty">No people found.</div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

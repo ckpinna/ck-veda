@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Manual Ingestion{% endblock %}
+{% block content %}
+<div class="page-stack">
+  <section class="page-heading">
+    <div>
+      <p class="eyebrow">Manual Ingestion</p>
+      <h1>Add Relationship Note</h1>
+    </div>
+  </section>
+
+  <section class="section">
+    <form method="post" action="/api/extract" class="stack">
+      <label>
+        Manual Note
+        <textarea class="note-input" name="note" required placeholder="Met Sarah at JPM. She is based in NYC, knows payments infra..."></textarea>
+      </label>
+      <div class="actions">
+        <button type="submit">Extract</button>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}
