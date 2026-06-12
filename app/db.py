@@ -1,5 +1,5 @@
-from datetime import UTC, date, datetime
-from typing import Any
+from datetime import date, datetime, timezone
+from typing import Any, Optional
 
 from supabase import Client, create_client
 
@@ -7,18 +7,18 @@ from app.config import get_settings
 from app.schemas import PersonExtraction, RelationshipExtraction
 
 
-def clean_text(value: str | None) -> str | None:
+def clean_text(value: Optional[str]) -> Optional[str]:
     if value is None:
         return None
     trimmed = value.strip()
     return trimmed or None
 
 
-def date_or_today(value: str | None) -> str:
+def date_or_today(value: Optional[str]) -> str:
     return clean_text(value) or date.today().isoformat()
 
 
-def date_or_none(value: str | None) -> str | None:
+def date_or_none(value: Optional[str]) -> Optional[str]:
     return clean_text(value)
 
 
@@ -31,7 +31,7 @@ def get_supabase() -> Client:
     return create_client(settings.supabase_url, settings.supabase_service_role_key)
 
 
-def list_people(query: str | None = None) -> list[dict[str, Any]]:
+def list_people(query: Optional[str] = None) -> list[dict[str, Any]]:
     supabase = get_supabase()
     if clean_text(query):
         return supabase.rpc("search_people", {"search_query": query}).execute().data or []
@@ -47,7 +47,7 @@ def list_people(query: str | None = None) -> list[dict[str, Any]]:
     )
 
 
-def get_person(person_id: str) -> dict[str, Any] | None:
+def get_person(person_id: str) -> Optional[dict[str, Any]]:
     rows = (
         get_supabase()
         .table("people")
@@ -61,7 +61,7 @@ def get_person(person_id: str) -> dict[str, Any] | None:
     return rows[0] if rows else None
 
 
-def get_person_detail(person_id: str) -> dict[str, Any] | None:
+def get_person_detail(person_id: str) -> Optional[dict[str, Any]]:
     supabase = get_supabase()
     person = get_person(person_id)
     if not person:
@@ -136,7 +136,7 @@ def add_possible_matches(extraction: RelationshipExtraction) -> RelationshipExtr
     return extraction.model_copy(update={"people": people})
 
 
-def find_existing_person_by_name(display_name: str | None) -> dict[str, Any] | None:
+def find_existing_person_by_name(display_name: Optional[str]) -> Optional[dict[str, Any]]:
     name = clean_text(display_name)
     if not name:
         return None
@@ -163,7 +163,22 @@ def update_last_interaction(person_id: str, interaction_date: str) -> None:
         supabase.table("people").update({"last_interaction_at": interaction_date}).eq("id", person_id).execute()
 
 
-def insert_contact_method(person_id: str, item: Any) -> None:
+def person_has_preferred_contact(person_id: str) -> bool:
+    rows = (
+        get_supabase()
+        .table("contact_methods")
+        .select("id")
+        .eq("person_id", person_id)
+        .eq("is_preferred", True)
+        .limit(1)
+        .execute()
+        .data
+        or []
+    )
+    return bool(rows)
+
+
+def insert_contact_method(person_id: str, item: Any, *, is_preferred: Optional[bool] = None) -> None:
     value = clean_text(item.contact_value)
     if not value:
         return
@@ -186,14 +201,19 @@ def insert_contact_method(person_id: str, item: Any) -> None:
             "person_id": person_id,
             "contact_type": item.contact_type.value,
             "contact_value": value,
-            "is_preferred": item.is_preferred,
+            "is_preferred": item.is_preferred if is_preferred is None else is_preferred,
             "label": clean_text(item.label),
             "confidence": item.confidence.value,
         }
     ).execute()
 
 
-def resolve_person_id(temp_to_person_id: dict[str, str], name_to_person_id: dict[str, str], temp_id: str | None, name: str | None) -> str | None:
+def resolve_person_id(
+    temp_to_person_id: dict[str, str],
+    name_to_person_id: dict[str, str],
+    temp_id: Optional[str],
+    name: Optional[str],
+) -> Optional[str]:
     if clean_text(temp_id) and temp_id in temp_to_person_id:
         return temp_to_person_id[temp_id]
     name_key = clean_text(name)
@@ -284,14 +304,17 @@ def save_extraction(extraction: RelationshipExtraction) -> dict[str, Any]:
             }
         ).execute()
 
-    return {"saved_people": saved_people, "saved_at": datetime.now(UTC).isoformat()}
+    return {"saved_people": saved_people, "saved_at": datetime.now(timezone.utc).isoformat()}
 
 
 def save_person_facts(person_id: str, person: PersonExtraction) -> None:
     supabase = get_supabase()
+    has_preferred_contact = person_has_preferred_contact(person_id)
 
     for contact_method in person.contact_methods:
-        insert_contact_method(person_id, contact_method)
+        is_preferred = contact_method.is_preferred and not has_preferred_contact
+        insert_contact_method(person_id, contact_method, is_preferred=is_preferred)
+        has_preferred_contact = has_preferred_contact or is_preferred
 
     knows_about_rows = [
         {

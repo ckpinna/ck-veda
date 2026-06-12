@@ -1,23 +1,23 @@
-from enum import StrEnum
-from typing import Any
+from enum import Enum
+from typing import Any, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class Confidence(StrEnum):
+class Confidence(str, Enum):
     confirmed = "confirmed"
     inferred = "inferred"
     uncertain = "uncertain"
 
 
-class RelationshipStatus(StrEnum):
+class RelationshipStatus(str, Enum):
     active = "active"
     stale = "stale"
     outdated = "outdated"
     archived = "archived"
 
 
-class ContactType(StrEnum):
+class ContactType(str, Enum):
     email = "email"
     personal_email = "personal_email"
     work_email = "work_email"
@@ -30,7 +30,7 @@ class ContactType(StrEnum):
     other = "other"
 
 
-class InteractionChannel(StrEnum):
+class InteractionChannel(str, Enum):
     in_person = "in_person"
     email = "email"
     work_email = "work_email"
@@ -43,7 +43,7 @@ class InteractionChannel(StrEnum):
     other = "other"
 
 
-class InteractionQuality(StrEnum):
+class InteractionQuality(str, Enum):
     quick_hello = "quick_hello"
     normal_catch_up = "normal_catch_up"
     deep_conversation = "deep_conversation"
@@ -51,7 +51,7 @@ class InteractionQuality(StrEnum):
     trusted_conversation = "trusted_conversation"
 
 
-class IntroductionStatus(StrEnum):
+class IntroductionStatus(str, Enum):
     proposed = "proposed"
     requested = "requested"
     made = "made"
@@ -61,7 +61,7 @@ class IntroductionStatus(StrEnum):
     closed = "closed"
 
 
-class SourceType(StrEnum):
+class SourceType(str, Enum):
     conference = "conference"
     event = "event"
     community = "community"
@@ -82,103 +82,103 @@ class AppModel(BaseModel):
 class PossibleMatch(AppModel):
     id: str
     display_name: str
-    location: str | None = None
-    current_context: str | None = None
+    location: Optional[str] = None
+    current_context: Optional[str] = None
 
 
 class ContactMethodExtraction(AppModel):
     contact_type: ContactType = ContactType.other
     contact_value: str
     is_preferred: bool = False
-    label: str | None = None
+    label: Optional[str] = None
     confidence: Confidence = Confidence.uncertain
 
 
 class KnowsAboutExtraction(AppModel):
     topic: str
-    context: str | None = None
+    context: Optional[str] = None
     confidence: Confidence = Confidence.uncertain
-    mentioned_at: str | None = Field(default=None, description="YYYY-MM-DD when known.")
-    last_confirmed_at: str | None = Field(default=None, description="YYYY-MM-DD when known.")
+    mentioned_at: Optional[str] = Field(default=None, description="YYYY-MM-DD when known.")
+    last_confirmed_at: Optional[str] = Field(default=None, description="YYYY-MM-DD when known.")
     status: RelationshipStatus = RelationshipStatus.active
 
 
 class LookingForExtraction(AppModel):
     ask: str
-    context: str | None = None
-    asked_at: str | None = Field(default=None, description="YYYY-MM-DD when known.")
-    last_confirmed_at: str | None = Field(default=None, description="YYYY-MM-DD when known.")
+    context: Optional[str] = None
+    asked_at: Optional[str] = Field(default=None, description="YYYY-MM-DD when known.")
+    last_confirmed_at: Optional[str] = Field(default=None, description="YYYY-MM-DD when known.")
     status: RelationshipStatus = RelationshipStatus.active
     confidence: Confidence = Confidence.uncertain
 
 
 class CanHelpWithExtraction(AppModel):
     help_area: str
-    context: str | None = None
+    context: Optional[str] = None
     confidence: Confidence = Confidence.uncertain
-    mentioned_at: str | None = Field(default=None, description="YYYY-MM-DD when known.")
-    last_confirmed_at: str | None = Field(default=None, description="YYYY-MM-DD when known.")
+    mentioned_at: Optional[str] = Field(default=None, description="YYYY-MM-DD when known.")
+    last_confirmed_at: Optional[str] = Field(default=None, description="YYYY-MM-DD when known.")
     status: RelationshipStatus = RelationshipStatus.active
 
 
 class RelationshipSourceExtraction(AppModel):
     source_type: SourceType = SourceType.other
-    source_value: str | None = None
-    source_date: str | None = Field(default=None, description="YYYY-MM-DD when known.")
-    context: str | None = None
+    source_value: Optional[str] = None
+    source_date: Optional[str] = Field(default=None, description="YYYY-MM-DD when known.")
+    context: Optional[str] = None
     confidence: Confidence = Confidence.uncertain
 
 
 class ReferrerExtraction(AppModel):
-    display_name: str | None = None
-    context: str | None = None
-    referred_at: str | None = Field(default=None, description="YYYY-MM-DD when known.")
+    display_name: Optional[str] = None
+    context: Optional[str] = None
+    referred_at: Optional[str] = Field(default=None, description="YYYY-MM-DD when known.")
     confidence: Confidence = Confidence.uncertain
 
 
 class PersonExtraction(AppModel):
     temp_id: str
     display_name: str
-    first_name: str | None = None
-    last_name: str | None = None
-    location: str | None = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    location: Optional[str] = None
     location_confidence: Confidence = Confidence.uncertain
-    current_context: str | None = None
+    current_context: Optional[str] = None
     current_context_confidence: Confidence = Confidence.uncertain
     current_context_status: RelationshipStatus = RelationshipStatus.active
-    notes: str | None = None
+    notes: Optional[str] = None
     confidence: Confidence = Confidence.uncertain
-    selected_existing_person_id: str | None = None
+    selected_existing_person_id: Optional[str] = None
     possible_matches: list[PossibleMatch] = Field(default_factory=list)
     contact_methods: list[ContactMethodExtraction] = Field(default_factory=list)
     knows_about: list[KnowsAboutExtraction] = Field(default_factory=list)
     looking_for: list[LookingForExtraction] = Field(default_factory=list)
     can_help_with: list[CanHelpWithExtraction] = Field(default_factory=list)
-    relationship_source: RelationshipSourceExtraction | None = None
-    referrer: ReferrerExtraction | None = None
+    relationship_source: Optional[RelationshipSourceExtraction] = None
+    referrer: Optional[ReferrerExtraction] = None
 
 
 class InteractionExtraction(AppModel):
     person_temp_id: str
-    interaction_date: str | None = Field(default=None, description="YYYY-MM-DD when known.")
+    interaction_date: Optional[str] = Field(default=None, description="YYYY-MM-DD when known.")
     channel: InteractionChannel = InteractionChannel.manual_note
     summary: str
-    raw_text: str | None = None
+    raw_text: Optional[str] = None
     interaction_quality: InteractionQuality = InteractionQuality.normal_catch_up
     confidence: Confidence = Confidence.uncertain
 
 
 class PossibleIntroductionExtraction(AppModel):
-    from_person_temp_id: str | None = None
-    to_person_temp_id: str | None = None
-    from_person_name: str | None = None
-    to_person_name: str | None = None
-    requested_by_person_temp_id: str | None = None
-    requested_by_person_name: str | None = None
+    from_person_temp_id: Optional[str] = None
+    to_person_temp_id: Optional[str] = None
+    from_person_name: Optional[str] = None
+    to_person_name: Optional[str] = None
+    requested_by_person_temp_id: Optional[str] = None
+    requested_by_person_name: Optional[str] = None
     reason: str
     status: IntroductionStatus = IntroductionStatus.proposed
-    outcome: str | None = None
-    intro_date: str | None = Field(default=None, description="YYYY-MM-DD when known.")
+    outcome: Optional[str] = None
+    intro_date: Optional[str] = Field(default=None, description="YYYY-MM-DD when known.")
     confidence: Confidence = Confidence.uncertain
 
 
@@ -186,7 +186,7 @@ class RelationshipExtraction(AppModel):
     people: list[PersonExtraction] = Field(default_factory=list)
     interactions: list[InteractionExtraction] = Field(default_factory=list)
     possible_introductions: list[PossibleIntroductionExtraction] = Field(default_factory=list)
-    overall_summary: str | None = None
+    overall_summary: Optional[str] = None
 
 
 class SaveResult(AppModel):

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from typing import Optional
 
 from app import db
 
@@ -10,7 +11,7 @@ templates = Jinja2Templates(directory="app/templates")
 
 
 @router.get("/search", response_class=HTMLResponse)
-async def search_page(request: Request, q: str | None = None):
+async def search_page(request: Request, q: Optional[str] = None):
     error = None
     people = []
     if q and q.strip():

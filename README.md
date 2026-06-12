@@ -19,6 +19,8 @@ Python/FastAPI app for manual relationship-note ingestion.
    - `SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
 
+   `SUPABASE_SERVICE_ROLE_KEY` is used only by FastAPI on the server. Do not expose it to templates or browser code.
+
 3. Review the migration SQL:
 
    ```text
